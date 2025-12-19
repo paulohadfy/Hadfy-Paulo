@@ -1,0 +1,17 @@
+
+{
+  "short_name": "PlåtVerkstan",
+  "name": "Hallgrens PlåtVerkstan",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1c1917",
+  "background_color": "#1c1917",
+  "orientation": "portrait"
+}

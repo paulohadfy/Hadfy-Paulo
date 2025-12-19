@@ -1,0 +1,8 @@
+{
+  "name": "Hallgrens Plåt",
+  "description": "En app för plåtslagare som effektiviserar arbetet i verkstaden med fokus på beräkningar, måttagning och utbredning (unfolding) av plåtdetaljer.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
