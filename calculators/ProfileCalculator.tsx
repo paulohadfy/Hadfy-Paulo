@@ -13,46 +13,27 @@ interface SavedProfile {
     date: string;
     segments: ProfileSegment[];
     profileLength: string;
-    colorCode: string; // New: Hex code
-    colorName: string; // New: Friendly name
 }
 
-// Standard Sheet Metal Colors (SSAB/Lindab/Plannja approx)
-const SHEET_COLORS = [
-    { name: 'Svart (015)', hex: '#262626', highlight: '#404040' },
-    { name: 'Mörkgrå (087)', hex: '#4a4a4a', highlight: '#6b6b6b' },
-    { name: 'Silver (045)', hex: '#a3a3a3', highlight: '#d4d4d4' },
-    { name: 'Vit (001)', hex: '#f0f0f0', highlight: '#ffffff' },
-    { name: 'Tegelröd (742)', hex: '#8b3a3a', highlight: '#b95c5c' },
-    { name: 'Mörkröd (758)', hex: '#5c1a1a', highlight: '#8a2e2e' },
-    { name: 'Brun (434)', hex: '#4e342e', highlight: '#795548' },
-    { name: 'Grön (874)', hex: '#2e4e3e', highlight: '#4a7a62' },
-    { name: 'Mörkblå (524)', hex: '#1e3a5f', highlight: '#355c8c' },
-    { name: 'Aluzink', hex: '#8e9eab', highlight: '#b0c4de' }, // Special handling for shiny look
-];
-
 const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
-  // Initialize with a standard Window Flashing shape
+  // Initialize with a standard Window Flashing shape (Fönsterbleck)
   const defaultProfile: ProfileSegment[] = [
-    { id: '1', length: 15, angle: 0 },
-    { id: '2', length: 100, angle: 100 },
-    { id: '3', length: 30, angle: 90 },
-    { id: '4', length: 10, angle: 135 },
+    { id: '1', length: 15, angle: 0 },   // Bakkant
+    { id: '2', length: 100, angle: 100 }, // Fall
+    { id: '3', length: 30, angle: 90 },   // Framkant
+    { id: '4', length: 10, angle: 135 },  // Droppnäsa
   ];
 
   const [segments, setSegments] = useLocalStorage<ProfileSegment[]>('profile_segments', defaultProfile);
   const [profileLength, setProfileLength] = useLocalStorage<string>('profile_length', '');
   const [savedProfiles, setSavedProfiles] = useLocalStorage<SavedProfile[]>('saved_profiles_list', []);
   
-  // Color State
-  const [selectedColor, setSelectedColor] = useLocalStorage('profile_color_idx', 0); // Stores index of SHEET_COLORS
-
   const [totalLength, setTotalLength] = useState(0);
   const [show3D, setShow3D] = useState(false);
   const [profileName, setProfileName] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
-  const [saveFeedback, setSaveFeedback] = useState(false);
 
+  // Calculate total theoretical cut length
   useEffect(() => {
     const sum = segments.reduce((acc, curr) => acc + (isNaN(curr.length) ? 0 : curr.length), 0);
     setTotalLength(sum);
@@ -81,53 +62,37 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
   // --- Save / Load Logic ---
   const saveProfile = () => {
       if (!profileName.trim()) {
-          alert('Du måste ange ett namn på profilen (t.ex. "Fönsterbleck Kök") för att spara.');
+          alert('Ange ett namn på profilen först.');
           return;
       }
-      
-      const colorInfo = SHEET_COLORS[selectedColor];
-
       const newProfile: SavedProfile = {
           id: Date.now().toString(),
           name: profileName,
           date: new Date().toLocaleDateString('sv-SE'),
           segments: segments,
-          profileLength: profileLength,
-          colorCode: colorInfo.hex,
-          colorName: colorInfo.name
+          profileLength: profileLength
       };
-      
       setSavedProfiles([newProfile, ...savedProfiles]);
       setProfileName('');
-      
-      // Visual feedback
-      setSaveFeedback(true);
-      setTimeout(() => setSaveFeedback(false), 2000);
+      alert('Profil sparad!');
   };
 
   const loadProfile = (profile: SavedProfile) => {
-      if(window.confirm(`Vill du ladda "${profile.name}"? Nuvarande osparade ändringar ersätts.`)) {
+      if(window.confirm(`Vill du ladda "${profile.name}"? Nuvarande osparade ändringar försvinner.`)) {
           setSegments(profile.segments);
           setProfileLength(profile.profileLength || '');
-          setProfileName(profile.name); // Load name back into input for editing
-          
-          // Try to match color, default to 0 (Black) if not found
-          const colorIndex = SHEET_COLORS.findIndex(c => c.name === profile.colorName);
-          setSelectedColor(colorIndex !== -1 ? colorIndex : 0);
-          
           setShowShareModal(false);
       }
   };
 
-  const deleteProfile = (id: string, e: React.MouseEvent) => {
-      e.stopPropagation();
-      if(window.confirm('Ta bort denna sparade profil permanent?')) {
+  const deleteProfile = (id: string) => {
+      if(window.confirm('Ta bort denna sparade profil?')) {
           setSavedProfiles(savedProfiles.filter(p => p.id !== id));
       }
   };
 
-  // --- Visualizer Component ---
-  const ProfileVisualizer = ({ items, is3D, printMode = false, colorIdx }: { items: ProfileSegment[], is3D: boolean, printMode?: boolean, colorIdx: number }) => {
+  // --- Visualizer Component (Supports Print Mode) ---
+  const ProfileVisualizer = ({ items, is3D, printMode = false }: { items: ProfileSegment[], is3D: boolean, printMode?: boolean }) => {
     let currentX = 0;
     let currentY = 0;
     let currentAngle = 0; 
@@ -164,21 +129,18 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
     
     // Theme Colors
     const bgClass = printMode ? "bg-white border-2 border-gray-300" : "bg-stone-900 border border-stone-700";
-    const strokeColor = printMode ? "#000000" : "#d97706";
+    const strokeColor = printMode ? "#000000" : "#d97706"; // Black for print, Amber for dark mode
     const vertexStart = printMode ? "#16a34a" : "#10b981";
     const vertexEnd = printMode ? "#dc2626" : "#ef4444";
     const gridColor = printMode ? "#e5e5e5" : "#333";
+    const textColor = printMode ? "text-gray-800" : "text-gray-500";
     
-    // 3D Color Logic
-    const activeColor = SHEET_COLORS[colorIdx] || SHEET_COLORS[0];
-    const isAluzink = activeColor.name.includes('Aluzink');
-    
-    // Create gradient based on selected color for 3D realism
-    const faceGradient = isAluzink 
-        ? `linear-gradient(45deg, #b0c4de, #8e9eab, #dcdcdc)` // Shiny metal
-        : `linear-gradient(90deg, ${activeColor.hex}, ${activeColor.highlight}, ${activeColor.hex})`; // Painted metal
-        
-    const faceBorder = printMode ? "1px solid rgba(0,0,0,0.3)" : "1px solid rgba(255,255,255,0.15)";
+    // 3D Colors
+    // In print mode we want a "SketchUp" style: light faces with dark edges
+    const faceGradient = printMode 
+        ? "linear-gradient(90deg, #e5e7eb, #f3f4f6, #d1d5db)" // Light gray gradient
+        : "linear-gradient(90deg, #78716c, #a8a29e, #57534e)"; // Dark stone gradient
+    const faceBorder = printMode ? "1px solid #374151" : "1px solid rgba(255,255,255,0.1)";
 
     // 2D SVG View
     if (!is3D) {
@@ -209,9 +171,8 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
 
     // 3D CSS View
     const maxDim = Math.max(width, height) || 100;
-    // Prevent division by zero or extreme scaling
-    const scale = Math.min(200 / maxDim, 2.5); 
-    const extrusionDepth = printMode ? 200 : 300; 
+    const scale = 200 / maxDim;
+    const extrusionDepth = 300; 
 
     return (
         <div className={`w-full ${printMode ? 'h-64' : 'h-80'} ${bgClass} rounded-lg flex items-center justify-center overflow-hidden relative shadow-inner perspective-[1000px] print:shadow-none`}>
@@ -224,7 +185,7 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                     .profile-3d-scene {
                         transform-style: preserve-3d;
                         animation: ${printMode ? 'none' : 'rotateProfile 12s linear infinite'};
-                        transform: ${printMode ? 'rotateX(-25deg) rotateY(-45deg)' : ''}; 
+                        transform: ${printMode ? 'rotateX(-25deg) rotateY(-45deg)' : ''}; /* Fixed nice angle for print */
                     }
                     .profile-face {
                         position: absolute;
@@ -232,7 +193,6 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                         border: ${faceBorder};
                         backface-visibility: visible;
                         transform-origin: 0 0;
-                        box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
                     }
                 `}
             </style>
@@ -242,7 +202,7 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                     {calculatedSegments.map((seg, i) => (
                         <div key={i} className="profile-face"
                             style={{
-                                width: `${Math.max(seg.length * scale, 2)}px`, // Ensure at least 2px width so it is visible even if length is tiny
+                                width: `${seg.length * scale}px`,
                                 height: `${extrusionDepth}px`,
                                 transform: `translate3d(${seg.x * scale}px, ${seg.y * scale}px, ${-extrusionDepth/2}px) rotateZ(${seg.angle}deg) rotateX(90deg)`
                             }}
@@ -250,13 +210,7 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                     ))}
                 </div>
             </div>
-             {!printMode && (
-                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
-                    <span className="text-xs text-gray-500 bg-black/50 px-2 py-1 rounded">
-                        Visar: {activeColor.name}
-                    </span>
-                </div>
-             )}
+             {!printMode && <div className="absolute bottom-4 text-xs text-gray-500 animate-pulse">Roterar...</div>}
         </div>
     );
   };
@@ -277,14 +231,14 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
             
             {/* Left Col: Visualizer */}
             <div className="order-2 lg:order-1 space-y-6">
-                <div className="relative group">
+                <div className="relative">
                     <button 
                         onClick={() => setShow3D(!show3D)}
                         className="absolute top-4 right-4 bg-stone-800 hover:bg-stone-700 text-white text-xs font-bold py-2 px-3 rounded border border-gray-600 z-20 flex items-center gap-2 shadow-lg"
                     >
                         {show3D ? "Visa Ritning (2D)" : "Visa 3D-modell"}
                     </button>
-                    <ProfileVisualizer items={segments} is3D={show3D} colorIdx={selectedColor} />
+                    <ProfileVisualizer items={segments} is3D={show3D} />
                 </div>
                 
                 {/* Saved Profiles Section */}
@@ -295,19 +249,12 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                     ) : (
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                             {savedProfiles.map(p => (
-                                <div key={p.id} className="flex justify-between items-center bg-workshop-surface p-2 rounded border border-stone-700 hover:border-gray-500 transition-colors">
+                                <div key={p.id} className="flex justify-between items-center bg-workshop-surface p-2 rounded border border-stone-700">
                                     <div className="flex-1 cursor-pointer hover:text-white" onClick={() => loadProfile(p)}>
-                                        <div className="font-bold text-sm text-gray-200 flex items-center gap-2">
-                                            <span 
-                                                className="w-3 h-3 rounded-full border border-gray-600" 
-                                                style={{ backgroundColor: p.colorCode || '#333' }}
-                                                title={p.colorName}
-                                            ></span>
-                                            {p.name}
-                                        </div>
-                                        <div className="text-[10px] text-gray-500 pl-5">{p.date} • {p.segments.length} delar • {p.colorName || 'Okänd färg'}</div>
+                                        <div className="font-bold text-sm text-gray-200">{p.name}</div>
+                                        <div className="text-[10px] text-gray-500">{p.date} • {p.segments.length} delar</div>
                                     </div>
-                                    <button onClick={(e) => deleteProfile(p.id, e)} className="text-gray-600 hover:text-red-500 px-2">
+                                    <button onClick={() => deleteProfile(p.id)} className="text-gray-500 hover:text-red-500 px-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                 </div>
@@ -325,7 +272,7 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                         <div className="flex gap-2">
                              <button 
                                 onClick={() => { setShowShareModal(true); setShow3D(true); }}
-                                className="bg-workshop-accent hover:bg-orange-700 text-white text-sm px-3 py-2 rounded flex items-center gap-1 shadow font-bold"
+                                className="bg-workshop-accent hover:bg-orange-700 text-white text-sm px-3 py-2 rounded flex items-center gap-1 shadow"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
                                 Dela / Beställ
@@ -333,62 +280,35 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                         </div>
                         <button 
                             onClick={addSegment}
-                            className="bg-green-700 hover:bg-green-600 text-white text-sm px-3 py-2 rounded flex items-center gap-1 font-bold"
+                            className="bg-green-700 hover:bg-green-600 text-white text-sm px-3 py-2 rounded flex items-center gap-1"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             Ny Del
                         </button>
                     </div>
 
-                    {/* Profile Name, Color & Length */}
-                    <div className="space-y-3 mb-4">
-                        {/* Name and Save */}
-                        <div className="bg-stone-900/50 p-3 rounded border border-stone-700">
-                             <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">Benämning / Projekt</label>
-                             <div className="flex gap-2">
+                    {/* Profile Name & Length */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="bg-stone-900/50 p-2 rounded border border-stone-700">
+                             <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">Benämning</label>
+                             <div className="flex gap-1">
                                 <input 
                                     type="text" 
                                     value={profileName}
                                     onChange={(e) => setProfileName(e.target.value)}
-                                    className="w-full bg-stone-800 text-white p-2 rounded border border-stone-600 text-sm focus:border-workshop-accent focus:outline-none"
+                                    className="w-full bg-stone-800 text-white p-1 rounded border border-stone-600 text-sm"
                                     placeholder="T.ex. Fönsterbleck Kök"
                                 />
-                                <button 
-                                    onClick={saveProfile} 
-                                    className={`px-4 rounded font-bold text-white transition-all flex items-center gap-2 ${saveFeedback ? 'bg-green-600 scale-105' : 'bg-stone-600 hover:bg-stone-500'}`}
-                                >
-                                    {saveFeedback ? 'Sparad!' : 'Spara'}
-                                </button>
+                                <button onClick={saveProfile} className="bg-stone-700 px-2 rounded hover:bg-stone-600" title="Spara">💾</button>
                              </div>
                         </div>
-
-                        {/* Color Picker */}
-                        <div className="bg-stone-900/50 p-3 rounded border border-stone-700">
-                             <div className="flex justify-between items-center mb-2">
-                                 <label className="text-[10px] font-bold text-gray-400 uppercase">Välj Kulör</label>
-                                 <span className="text-xs font-bold text-white">{SHEET_COLORS[selectedColor].name}</span>
-                             </div>
-                             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                                 {SHEET_COLORS.map((color, idx) => (
-                                     <button
-                                        key={color.name}
-                                        onClick={() => setSelectedColor(idx)}
-                                        className={`w-8 h-8 rounded-full border-2 flex-shrink-0 transition-transform ${selectedColor === idx ? 'border-workshop-accent scale-110' : 'border-stone-600 hover:scale-105'}`}
-                                        style={{ backgroundColor: color.hex }}
-                                        title={color.name}
-                                     />
-                                 ))}
-                             </div>
-                        </div>
-
-                        {/* Length Input */}
-                        <div className="bg-stone-900/50 p-3 rounded border border-stone-700">
+                        <div className="bg-stone-900/50 p-2 rounded border border-stone-700">
                             <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">Längd (mm)</label>
                             <input 
                                 type="number" 
                                 value={profileLength}
                                 onChange={(e) => setProfileLength(e.target.value)}
-                                className="w-full bg-stone-800 text-white p-2 rounded border border-stone-600 text-sm font-mono focus:border-workshop-accent focus:outline-none"
+                                className="w-full bg-stone-800 text-white p-1 rounded border border-stone-600 text-sm font-mono"
                                 placeholder="2000"
                             />
                         </div>
@@ -509,11 +429,8 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
 
                     {/* 3D Visual in Light Mode */}
                     <div className="mb-8 border border-gray-200 rounded p-4 bg-gray-50">
-                        <p className="text-xs font-bold text-gray-400 uppercase mb-2 flex justify-between">
-                            <span>3D Visualisering</span>
-                            <span className="text-black font-extrabold">{SHEET_COLORS[selectedColor].name}</span>
-                        </p>
-                        <ProfileVisualizer items={segments} is3D={true} printMode={true} colorIdx={selectedColor} />
+                        <p className="text-xs font-bold text-gray-400 uppercase mb-2">3D Visualisering</p>
+                        <ProfileVisualizer items={segments} is3D={true} printMode={true} />
                     </div>
 
                     {/* Data Table */}
@@ -544,13 +461,6 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                              <h4 className="font-bold border-b border-gray-300 pb-2 mb-4">Sammanställning</h4>
                              <div className="bg-gray-100 p-4 rounded border border-gray-200 space-y-3">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">Kulör:</span>
-                                    <span className="font-bold flex items-center gap-2">
-                                        <span className="w-3 h-3 rounded-full border border-gray-400" style={{backgroundColor: SHEET_COLORS[selectedColor].hex}}></span>
-                                        {SHEET_COLORS[selectedColor].name}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
                                     <span className="text-gray-600">Klippbredd (Ämne):</span>
                                     <span className="font-bold font-mono text-xl">{totalLength} mm</span>
                                 </div>
@@ -567,7 +477,7 @@ const ProfileCalculator: React.FC<ProfileCalculatorProps> = ({ onBack }) => {
                              </div>
 
                              <div className="mt-8 border border-gray-300 p-4 h-32 rounded">
-                                 <p className="text-xs text-gray-400 uppercase font-bold mb-1">Övriga Anteckningar</p>
+                                 <p className="text-xs text-gray-400 uppercase font-bold mb-1">Anteckningar / Kulör</p>
                              </div>
                         </div>
                     </div>
