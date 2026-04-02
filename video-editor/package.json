@@ -1,0 +1,26 @@
+{
+  "name": "videoklean-editor",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "npx remotion studio",
+    "render": "npx remotion render",
+    "build": "npx remotion render VideoEditor out/output.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.237",
+    "@remotion/media-utils": "4.0.237",
+    "@remotion/player": "4.0.237",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "remotion": "4.0.237"
+  },
+  "devDependencies": {
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
+    "typescript": "5.4.5"
+  },
+  "remotion": {
+    "entryPoint": "src/index.ts"
+  }
+}
