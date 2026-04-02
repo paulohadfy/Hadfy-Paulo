@@ -21,7 +21,7 @@ const FPS = editConfig.fps;
 // ─────────────────────────────────────────────────
 export const videoClips = [
   {
-    src: staticFile("videos/bland1.mov"),
+    src: staticFile("videos/bland1.mp4"),
     startAt: 0,
     endAt: editConfig.durationInFrames,
     trimStart: 3, // skip first 3 seconds
