@@ -6,11 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "video:studio": "remotion studio remotion/src/index.ts",
+    "video:render": "remotion render remotion/src/index.ts BlandatVideo out/BlandatVideo_edited.mp4",
+    "video:preview": "remotion preview remotion/src/index.ts"
   },
   "dependencies": {
+    "@remotion/cli": "^4.0.443",
+    "@remotion/player": "^4.0.443",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "remotion": "^4.0.443"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
