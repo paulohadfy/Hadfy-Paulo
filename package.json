@@ -7,9 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "video:studio": "remotion studio remotion/src/index.ts",
-    "video:render": "remotion render remotion/src/index.ts BlandatVideo out/BlandatVideo_edited.mp4",
-    "video:preview": "remotion preview remotion/src/index.ts"
+    "video:studio": "remotion studio remotion/src/index.ts --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell",
+    "video:render": "remotion render remotion/src/index.ts BlandatVideo out/BlandatVideo_edited.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell",
+    "video:preview": "remotion preview remotion/src/index.ts --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.443",
