@@ -111,6 +111,12 @@ const TimeReport: React.FC<TimeReportProps> = ({ onBack }) => {
     }
   };
 
+  const handleDeleteAll = () => {
+    if(window.confirm('Är du säker? Detta raderar ALLA tidrapportsposter permanent.')) {
+        setHistory([]);
+    }
+  };
+
   const changeWeek = (direction: 'prev' | 'next') => {
     if (direction === 'prev') {
         if (selectedWeek === 1) {
@@ -199,6 +205,14 @@ const TimeReport: React.FC<TimeReportProps> = ({ onBack }) => {
             <p className="text-sm text-workshop-secondary">Logga & Exportera</p>
             </div>
         </div>
+        {history.length > 0 && (
+          <button
+            onClick={handleDeleteAll}
+            className="bg-red-900/60 hover:bg-red-800 text-red-300 hover:text-white border border-red-800 px-4 py-2 rounded-md text-sm font-semibold transition-colors"
+          >
+            Radera alla
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
