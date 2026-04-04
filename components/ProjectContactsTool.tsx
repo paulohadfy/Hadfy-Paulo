@@ -76,6 +76,12 @@ const ProjectContactsTool: React.FC<ProjectContactsToolProps> = ({ onBack }) => 
     }
   };
 
+  const handleDeleteAll = () => {
+    if (window.confirm('Är du säker? Detta raderar ALLA kontakter permanent.')) {
+        setContacts([]);
+    }
+  };
+
   const handleCall = (phone: string) => {
     window.location.href = `tel:${phone.replace(/\s/g, '')}`;
   };
@@ -86,12 +92,22 @@ const ProjectContactsTool: React.FC<ProjectContactsToolProps> = ({ onBack }) => 
 
   return (
     <div className="max-w-3xl mx-auto pb-20">
-      <div className="mb-6">
-        <button onClick={onBack} className="bg-workshop-surface p-3 rounded-md hover:bg-gray-600 mr-4 border border-gray-700 text-workshop-text">&larr; Tillbaka</button>
-        <div className="inline-block align-middle">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <button onClick={onBack} className="bg-workshop-surface p-3 rounded-md hover:bg-gray-600 mr-4 border border-gray-700 text-workshop-text">&larr; Tillbaka</button>
+          <div>
             <h2 className="text-2xl font-bold text-workshop-text">Projektkontakter</h2>
             <p className="text-sm text-workshop-secondary">Ring eller SMS:a direkt</p>
+          </div>
         </div>
+        {contacts.length > 0 && (
+          <button
+            onClick={handleDeleteAll}
+            className="bg-red-900/60 hover:bg-red-800 text-red-300 hover:text-white border border-red-800 px-4 py-2 rounded-md text-sm font-semibold transition-colors"
+          >
+            Radera alla
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4">
