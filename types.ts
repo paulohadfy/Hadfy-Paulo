@@ -13,6 +13,7 @@ export enum ShapeType {
   PROJECT_CONTACTS = 'PROJECT_CONTACTS',
   COMPANY_WEB = 'COMPANY_WEB',
   MATERIAL_ORDER = 'MATERIAL_ORDER',
+  FOREST_IMAGE = 'FOREST_IMAGE',
 }
 
 export interface Shape {
