@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShapeType } from '../types.ts';
 import ShapeCard from './ShapeCard.tsx';
-import { SquareToRoundIcon, ConeIcon, ProfileIcon, SegmentBendIcon, ChimneyIcon, TimeReportIcon, CalculatorIcon, CameraIcon, LightIcon, MusicIcon, PhoneIcon, MaterialIcon, RoofIcon } from './icons/index.ts';
+import { SquareToRoundIcon, ConeIcon, ProfileIcon, SegmentBendIcon, ChimneyIcon, TimeReportIcon, CalculatorIcon, CameraIcon, LightIcon, MusicIcon, PhoneIcon, MaterialIcon, RoofIcon, ForestIcon } from './icons/index.ts';
 
 interface ShapeSelectorProps {
   onSelectShape: (shape: ShapeType) => void;
@@ -29,6 +29,7 @@ const shapes: ShapeOption[] = [
   { type: ShapeType.PROFILE, name: 'Profil', icon: <ProfileIcon />, description: 'Bockade profiler' },
   { type: ShapeType.SEGMENT_BEND, name: 'Segmentböj', icon: <SegmentBendIcon />, description: 'Rörböjar & Utbredning' },
   { type: ShapeType.CHIMNEY_FLASHING, name: 'Skorsten', icon: <ChimneyIcon />, description: 'Överbeslag & mått' },
+  { type: ShapeType.FOREST_IMAGE, name: 'Skog', icon: <ForestIcon />, description: 'Skogsbild' },
 ];
 
 const ShapeSelector: React.FC<ShapeSelectorProps> = ({ onSelectShape }) => {

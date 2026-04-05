@@ -13,6 +13,7 @@ import PhoneIcon from './PhoneIcon.tsx';
 import WebIcon from './WebIcon.tsx';
 import MaterialIcon from './MaterialIcon.tsx';
 import RoofIcon from './RoofIcon.tsx';
+import ForestIcon from './ForestIcon.tsx';
 
 export {
   SquareToRoundIcon,
@@ -29,4 +30,5 @@ export {
   WebIcon,
   MaterialIcon,
   RoofIcon,
+  ForestIcon,
 };

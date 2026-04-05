@@ -16,6 +16,7 @@ import MusicRadioTool from './components/MusicRadioTool.tsx';
 import ProjectContactsTool from './components/ProjectContactsTool.tsx';
 import CompanyWebTool from './components/CompanyWebTool.tsx';
 import MaterialOrderTool from './components/MaterialOrderTool.tsx';
+import ForestImageTool from './components/ForestImageTool.tsx';
 
 const App: React.FC = () => {
   const [selectedShape, setSelectedShape] = useState<ShapeType | null>(null);
@@ -56,6 +57,8 @@ const App: React.FC = () => {
         return <SegmentBendCalculator onBack={handleBack} />;
       case ShapeType.CHIMNEY_FLASHING:
         return <ChimneyFlashingCalculator onBack={handleBack} />;
+      case ShapeType.FOREST_IMAGE:
+        return <ForestImageTool onBack={handleBack} />;
       default:
         return <ShapeSelector onSelectShape={handleSelectShape} />;
     }
